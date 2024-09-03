@@ -1,31 +1,52 @@
 version: 2.1
 
+# Define parameters
+parameters:
+  python-version:
+    type: string
+    default: "3.11"
+  deploy-environment:
+    type: string
+    default: "production"
+
 jobs:
+  # Define the build job
   build:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:<< parameters.python-version >>
     steps:
       - checkout
-      - run: python main.py
+      - run:
+          name: Run Build Script
+          command: python main.py
+
+  # Define the test job
   test:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:<< parameters.python-version >>
     steps:
       - checkout
-      - run: python tests.py
+      - run:
+          name: Run Tests
+          command: python tests.py
+
+  # Define the deploy job
   deploy:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:<< parameters.python-version >>
     steps:
-      - run: echo "Deploying to production server"
+      - run:
+          name: Deploy to Server
+          command: echo "Deploying to << parameters.deploy-environment >> server"
 
+# Define the workflow
 workflows:
   build_and_test_deploy:
     jobs:
       - build
       - test:
           requires:
-            - build 
+            - build
       - deploy:
           requires:
             - test
